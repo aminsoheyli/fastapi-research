@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-from fastapi.security import HTTPBasic, APIKeyHeader
+from fastapi.security import HTTPBasic, APIKeyQuery
 
 security = HTTPBasic()
 
@@ -51,7 +51,7 @@ app = FastAPI(
 app.include_router(tasks_routes)
 app.include_router(users_routes)
 
-header_scheme = APIKeyHeader(name="x-key")
+query_scheme = APIKeyQuery(name="api_key")
 
 
 @app.get('/public')
@@ -60,6 +60,6 @@ def public_route():
 
 
 @app.get('/private')
-def private_route(key: Annotated[str, Depends(header_scheme)]):
-    print(key)
+def private_route(api_key: Annotated[str, Depends(query_scheme)]):
+    print(api_key)
     return {"message": "This is a private route"}
