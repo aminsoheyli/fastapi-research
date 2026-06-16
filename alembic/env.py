@@ -3,7 +3,7 @@ import sys
 from logging.config import fileConfig
 from pathlib import Path
 
-from alembic import context
+from alembic import context # noqa: F401
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -18,8 +18,8 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Define the path to the .env file (project root)
-BASE_DIR = Path(__file__).resolve().parent.parent  # core/
-ENV_PATH = BASE_DIR.parent / ".env"
+BASE_DIR = Path(__file__).resolve().parent.parent  # project root
+ENV_PATH = BASE_DIR / ".env"
 load_dotenv(ENV_PATH)
 
 # Get the database URL from environment variables
