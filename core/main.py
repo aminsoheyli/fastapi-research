@@ -1,12 +1,17 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-from fastapi import FastAPI, Depends
+from fastapi import Depends
+from fastapi import FastAPI
+from fastapi.security import HTTPBearer
 
-from core.auth.jwt_auth import get_jwt_token_authenticated_user
+security = HTTPBearer(scheme_name="Token")
+
+from core.auth.jwt_auth import get_jwt_token_authenticated_user, generate_access_token, decode_refresh_token
 from core.tasks.routes import router as tasks_routes
 from core.users.models import UserModel
 from core.users.routes import router as users_routes
+from core.users.schemas import UserRefreshTokenSchema
 
 tags_metadata = [
     {
@@ -51,11 +56,18 @@ app.include_router(users_routes)
 
 
 @app.get('/public')
-def public_route():
+async def public_route():
     return {"message": "This is a public route"}
 
 
 @app.get('/private')
-def private_route(user: Annotated[UserModel, Depends(get_jwt_token_authenticated_user)]):
+async def private_route(user: Annotated[UserModel, Depends(get_jwt_token_authenticated_user)]):
     print(user.username)
     return {"message": "This is a private route"}
+
+
+@app.post('/refresh-token')
+async def user_refresh_token(request: UserRefreshTokenSchema):
+    user_id = decode_refresh_token(request.refresh_token)
+    access_token = generate_access_token(user_id)
+    return {"access_token": access_token}
