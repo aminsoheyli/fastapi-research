@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import FastAPI, Depends
 
-from core.auth.token_auth import get_token_authenticated_user
+from core.auth.jwt_auth import get_jwt_token_authenticated_user
 from core.tasks.routes import router as tasks_routes
 from core.users.models import UserModel
 from core.users.routes import router as users_routes
@@ -56,6 +56,6 @@ def public_route():
 
 
 @app.get('/private')
-def private_route(user: Annotated[UserModel, Depends(get_token_authenticated_user)]):
+def private_route(user: Annotated[UserModel, Depends(get_jwt_token_authenticated_user)]):
     print(user.username)
     return {"message": "This is a private route"}
