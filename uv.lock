@@ -278,6 +278,7 @@ dependencies = [
     { name = "alembic" },
     { name = "argon2-cffi" },
     { name = "fastapi", extra = ["all"] },
+    { name = "pydantic-settings" },
     { name = "pyjwt" },
 ]
 
@@ -291,6 +292,7 @@ requires-dist = [
     { name = "alembic", specifier = ">1.14,<1.15" },
     { name = "argon2-cffi", specifier = ">=25.1.0" },
     { name = "fastapi", extras = ["all"], specifier = ">0.115,<0.116" },
+    { name = "pydantic-settings", specifier = ">=2.14.1" },
     { name = "pyjwt", specifier = ">=2.13.0" },
 ]
 
