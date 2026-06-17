@@ -2,13 +2,10 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import FastAPI, Depends
-from fastapi import HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.orm import Session
 
-from core.database import get_db
+from core.auth.token_auth import get_token_authenticated_user
 from core.tasks.routes import router as tasks_routes
-from core.users.models import TokenModel, UserModel
+from core.users.models import UserModel
 from core.users.routes import router as users_routes
 
 tags_metadata = [
@@ -52,21 +49,6 @@ app = FastAPI(
 app.include_router(tasks_routes)
 app.include_router(users_routes)
 
-security = HTTPBearer(scheme_name="Token")
-
-
-def get_authenticated_user(
-        credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-        db: Annotated[Session, Depends(get_db)]
-):
-    token_obj = db.query(TokenModel).filter_by(token=credentials.credentials).one_or_none()
-    if not token_obj:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication failed, invalid credentials",
-        )
-    return token_obj.user
-
 
 @app.get('/public')
 def public_route():
@@ -74,6 +56,6 @@ def public_route():
 
 
 @app.get('/private')
-def private_route(user: Annotated[UserModel, Depends(get_authenticated_user)]):
+def private_route(user: Annotated[UserModel, Depends(get_token_authenticated_user)]):
     print(user.username)
     return {"message": "This is a private route"}

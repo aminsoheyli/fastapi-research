@@ -10,7 +10,7 @@ from core.users.models import UserModel
 security = HTTPBasic()
 
 
-def get_authenticated_user(
+def get_basic_authenticated_user(
         credentials: Annotated[HTTPBasicCredentials, Depends(security)],
         db: Annotated[Session, Depends(get_db)]
 ):
