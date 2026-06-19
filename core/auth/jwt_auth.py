@@ -26,7 +26,7 @@ REFRESH_TOKEN_EXPIRY = int(datetime.timedelta(days=1).total_seconds())
 def get_jwt_token_authenticated_user(
         credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
         db: Annotated[Session, Depends(get_db)]
-):
+) -> UserModel:
     token = credentials.credentials
 
     try:

@@ -1,8 +1,7 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-from fastapi import Depends
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, Response, Request
 from fastapi.security import HTTPBearer
 
 security = HTTPBearer(scheme_name="Token")
@@ -71,3 +70,15 @@ async def user_refresh_token(request: UserRefreshTokenSchema):
     user_id = decode_refresh_token(request.refresh_token)
     access_token = generate_access_token(user_id)
     return {"access_token": access_token}
+
+
+@app.post('/cookie')
+async def set_cookie(response: Response):
+    response.set_cookie(key='test', value='something')
+    return {"message": 'cookie has been set successfully'}
+
+
+@app.get('/cookie')
+async def get_cookie(request: Request):
+    cookie_value = request.cookies.get('test')
+    return {'cookie': {'test': cookie_value}}
