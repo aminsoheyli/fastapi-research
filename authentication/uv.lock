@@ -105,6 +105,35 @@ wheels = [
 ]
 
 [[package]]
+name = "authentication"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "alembic" },
+    { name = "argon2-cffi" },
+    { name = "fastapi", extra = ["all"] },
+    { name = "pydantic-settings" },
+    { name = "pyjwt" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "ipython" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "alembic", specifier = ">1.14,<1.15" },
+    { name = "argon2-cffi", specifier = ">=25.1.0" },
+    { name = "fastapi", extras = ["all"], specifier = ">0.115,<0.116" },
+    { name = "pydantic-settings", specifier = ">=2.14.1" },
+    { name = "pyjwt", specifier = ">=2.13.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "ipython", specifier = ">=9.14.1" }]
+
+[[package]]
 name = "certifi"
 version = "2026.5.20"
 source = { registry = "https://pypi.org/simple" }
@@ -269,35 +298,6 @@ all = [
     { name = "ujson" },
     { name = "uvicorn", extra = ["standard"] },
 ]
-
-[[package]]
-name = "fastapi-auth"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "alembic" },
-    { name = "argon2-cffi" },
-    { name = "fastapi", extra = ["all"] },
-    { name = "pydantic-settings" },
-    { name = "pyjwt" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "ipython" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "alembic", specifier = ">1.14,<1.15" },
-    { name = "argon2-cffi", specifier = ">=25.1.0" },
-    { name = "fastapi", extras = ["all"], specifier = ">0.115,<0.116" },
-    { name = "pydantic-settings", specifier = ">=2.14.1" },
-    { name = "pyjwt", specifier = ">=2.13.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [{ name = "ipython", specifier = ">=9.14.1" }]
 
 [[package]]
 name = "fastapi-cli"
