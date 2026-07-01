@@ -33,3 +33,19 @@ def create_post(post: Post):
     post_dict = post.model_dump(exclude_unset=True) | {'id': id}
     my_posts.append(post_dict)
     return {"data": post_dict}
+
+
+def find_post(post_id) -> dict | None:
+    for post in my_posts:
+        if post['id'] == post_id:
+            return post
+    return None
+
+
+@app.get('/posts/latest')
+def get_latest_post():
+    if len(my_posts) == 0:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return {"data": my_posts[-1]}
+
+
