@@ -25,3 +25,11 @@ async def root():
 @app.get('/posts')
 def get_posts():
     return {"data": my_posts}
+
+
+@app.post('/posts', status_code=status.HTTP_201_CREATED)
+def create_post(post: Post):
+    id = my_posts[-1]['id'] + 1
+    post_dict = post.model_dump(exclude_unset=True) | {'id': id}
+    my_posts.append(post_dict)
+    return {"data": post_dict}
