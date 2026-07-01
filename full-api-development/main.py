@@ -49,3 +49,11 @@ def get_latest_post():
     return {"data": my_posts[-1]}
 
 
+@app.get('/posts/{post_id}')
+def get_post(post_id: int):
+    post = find_post(post_id)
+    if post is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
+    return {"data": post}
+
+
