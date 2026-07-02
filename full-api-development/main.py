@@ -57,6 +57,16 @@ def get_post(post_id: int):
     return {"data": post}
 
 
+@app.put('/posts/{post_id}')
+def update_post(post_id: int, post_update: Post):
+    post = find_post(post_id)
+    if post is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
+    update_data = post_update.model_dump()
+    post.update(update_data)
+    return {"data": update_data}
+
+
 @app.delete('/posts/{post_id}', status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(post_id: int):
     post = find_post(post_id)
