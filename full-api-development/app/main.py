@@ -1,4 +1,3 @@
-import os
 from contextlib import asynccontextmanager
 from typing import Annotated
 
@@ -6,14 +5,16 @@ import asyncpg
 from fastapi import FastAPI, HTTPException, Request, Response, status, Depends
 from pydantic import BaseModel
 
+from app.config import settings
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.pool = await asyncpg.create_pool(
-        user=os.environ["POSTGRES_USER"],
-        password=os.environ["POSTGRES_PASSWORD"],
-        database=os.environ["POSTGRES_DB"],
-        host=os.environ.get("POSTGRES_HOST", "localhost"),
+        user=settings.postgres_user,
+        password=settings.postgres_password,
+        database=settings.postgres_db,
+        host=settings.postgres_host,
         min_size=5,
         max_size=20,
     )
@@ -50,19 +51,19 @@ async def root():
 
 
 @app.get('/posts')
-def get_posts():
+async def get_posts():
     return {"data": my_posts}
 
 
 @app.post('/posts', status_code=status.HTTP_201_CREATED)
-def create_post(post: Post):
+async def create_post(post: Post):
     id = my_posts[-1]['id'] + 1
     post_dict = post.model_dump(exclude_unset=True) | {'id': id}
     my_posts.append(post_dict)
     return {"data": post_dict}
 
 
-def find_post(post_id) -> dict | None:
+async def find_post(post_id) -> dict | None:
     for post in my_posts:
         if post['id'] == post_id:
             return post
@@ -70,14 +71,14 @@ def find_post(post_id) -> dict | None:
 
 
 @app.get('/posts/latest')
-def get_latest_post():
+async def get_latest_post():
     if len(my_posts) == 0:
         raise HTTPException(status_code=404, detail="Post not found")
     return {"data": my_posts[-1]}
 
 
 @app.get('/posts/{post_id}')
-def get_post(post_id: int):
+async def get_post(post_id: int):
     post = find_post(post_id)
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
@@ -85,7 +86,7 @@ def get_post(post_id: int):
 
 
 @app.put('/posts/{post_id}')
-def update_post(post_id: int, post_update: Post):
+async def update_post(post_id: int, post_update: Post):
     post = find_post(post_id)
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
@@ -95,9 +96,16 @@ def update_post(post_id: int, post_update: Post):
 
 
 @app.delete('/posts/{post_id}', status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(post_id: int):
+async def delete_post(post_id: int):
     post = find_post(post_id)
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
     my_posts.remove(post)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.get('/db')
+async def get_db(conn: DbConnection):
+    values = await conn.fetch('SELECT * FROM posts')
+    print(f'db values: {values}')
+    await conn.close()
