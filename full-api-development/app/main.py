@@ -8,7 +8,6 @@ class Post(BaseModel):
     title: str
     content: str
     published: bool = True
-    rating: int | None = None
 
 
 my_posts = [
