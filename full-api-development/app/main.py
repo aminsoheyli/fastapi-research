@@ -1,7 +1,27 @@
-from fastapi import FastAPI, HTTPException, Response, status
+import os
+from contextlib import asynccontextmanager
+from typing import Annotated
+
+import asyncpg
+from fastapi import FastAPI, HTTPException, Request, Response, status, Depends
 from pydantic import BaseModel
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.pool = await asyncpg.create_pool(
+        user=os.environ["POSTGRES_USER"],
+        password=os.environ["POSTGRES_PASSWORD"],
+        database=os.environ["POSTGRES_DB"],
+        host=os.environ.get("POSTGRES_HOST", "localhost"),
+        min_size=5,
+        max_size=20,
+    )
+    yield
+    await app.state.pool.close()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 class Post(BaseModel):
@@ -14,6 +34,14 @@ my_posts = [
     Post(title='title of post 1', content='content of post 1').model_dump(exclude_unset=True) | {'id': 1},
     Post(title='favorite foods', content='I like pizza').model_dump(exclude_unset=True) | {'id': 2},
 ]
+
+
+async def get_db(request: Request):
+    async with request.app.state.pool.acquire() as conn:
+        yield conn
+
+
+DbConnection = Annotated[asyncpg.Connection, Depends(get_db)]
 
 
 @app.get("/")
