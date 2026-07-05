@@ -47,14 +47,10 @@ async def get_posts(session: SessionDep):
 
 
 @app.post('/posts', status_code=status.HTTP_201_CREATED)
-async def create_post(post: Post, conn: DbConnection):
-    new_post = await conn.fetchrow(
-        'INSERT INTO posts (title, content, published) VALUES ($1, $2, $3) RETURNING *',
-        post.title,
-        post.content,
-        post.published
-    )
-
+async def create_post(post: Post, session: SessionDep):
+    new_post = models.Post(title=post.title, content=post.content, published=post.published)
+    session.add(new_post)
+    await session.commit()
     return {"data": new_post}
 
 
