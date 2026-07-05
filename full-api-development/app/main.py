@@ -1,25 +1,25 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-import asyncpg
-from fastapi import FastAPI, HTTPException, Request, Response, status, Depends
+from fastapi import FastAPI, HTTPException, Response, status, Depends
 from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import settings
+from . import models
+from .database import engine, get_session, Base
+
+
+async def init_models():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    app.state.pool = await asyncpg.create_pool(
-        user=settings.postgres_user,
-        password=settings.postgres_password,
-        database=settings.postgres_db,
-        host=settings.postgres_host,
-        min_size=5,
-        max_size=20,
-    )
+async def lifespan(app: FastAPI):  # noqa
+    await init_models()
     yield
-    await app.state.pool.close()
+    await engine.dispose()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -31,12 +31,7 @@ class Post(BaseModel):
     published: bool = True
 
 
-async def get_db(request: Request):
-    async with request.app.state.pool.acquire() as conn:
-        yield conn
-
-
-DbConnection = Annotated[asyncpg.Connection, Depends(get_db)]
+SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 @app.get("/")
@@ -45,8 +40,9 @@ async def root():
 
 
 @app.get('/posts')
-async def get_posts(conn: DbConnection):
-    posts = await conn.fetch('SELECT * FROM posts')
+async def get_posts(session: SessionDep):
+    results = await session.execute(select(models.Post))
+    posts = results.scalars().all()
     return {"data": posts}
 
 
