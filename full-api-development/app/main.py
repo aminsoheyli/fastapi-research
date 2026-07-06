@@ -48,9 +48,10 @@ async def get_posts(session: SessionDep):
 
 @app.post('/posts', status_code=status.HTTP_201_CREATED)
 async def create_post(post: Post, session: SessionDep):
-    new_post = models.Post(title=post.title, content=post.content, published=post.published)
+    new_post = models.Post(**post.model_dump())
     session.add(new_post)
     await session.commit()
+    await session.refresh(new_post)
     return {"data": new_post}
 
 
