@@ -89,11 +89,10 @@ async def update_post(post_id: int, post_update: Post, conn: DbConnection):
 
 
 @app.delete('/posts/{post_id}', status_code=status.HTTP_204_NO_CONTENT)
-async def delete_post(post_id: int, conn: DbConnection):
-    deleted_post = await conn.fetchrow(
-        'DELETE FROM posts WHERE id = $1 RETURNING *',
-        post_id
-    )
-    if deleted_post is None:
+async def delete_post(post_id: int, session: SessionDep):
+    post = await session.get(models.Post, post_id)
+    if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
+    await session.delete(post)
+    await session.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
