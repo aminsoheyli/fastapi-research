@@ -66,11 +66,9 @@ async def get_latest_post(conn: DbConnection):
 
 
 @app.get('/posts/{post_id}')
-async def get_post(post_id: int, conn: DbConnection):
-    post = await conn.fetchrow(
-        'SELECT * FROM posts WHERE id = $1',
-        post_id
-    )
+async def get_post(post_id: int, session: SessionDep):
+    result = await session.execute(select(models.Post).where(models.Post.id == post_id))
+    post = result.scalar_one_or_none()
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
     return {"data": post}
