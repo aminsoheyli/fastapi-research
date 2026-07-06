@@ -75,16 +75,16 @@ async def get_post(post_id: int, session: SessionDep):
 
 
 @app.put('/posts/{post_id}')
-async def update_post(post_id: int, post_update: Post, conn: DbConnection):
-    updated_post = await conn.fetchrow(
-        'UPDATE posts SET title = $1,content = $2,published = $3 WHERE id = $4 RETURNING *',
-        post_update.title,
-        post_update.content,
-        post_update.published,
-        post_id
-    )
+async def update_post(post_id: int, post_update: Post, session: SessionDep):
+    update_data = post_update.model_dump()
+    if not update_data:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No fields provided to update")
+    result = await session.execute(
+        update(models.Post).where(models.Post.id == post_id).values(**update_data).returning(models.Post))
+    updated_post = result.scalar_one_or_none()
     if updated_post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
+    await session.commit()
     return {"data": updated_post}
 
 
