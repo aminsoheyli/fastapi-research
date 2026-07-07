@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -9,3 +11,9 @@ class PostBase(BaseModel):
 
 class PostCreate(PostBase):
     pass
+
+
+class Post(PostBase):
+    id: int
+    published: bool
+    created_at: datetime
