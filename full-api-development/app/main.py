@@ -23,13 +23,6 @@ async def lifespan(app: FastAPI):  # noqa
 
 app = FastAPI(lifespan=lifespan)
 
-
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = True
-
-
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
@@ -55,10 +48,10 @@ async def create_post(post: schemas.PostCreate, session: SessionDep):
 
 
 @app.get('/posts/latest')
-async def get_latest_post(conn: DbConnection):
-    latest_post = await conn.fetchrow(
-        'SELECT * FROM posts ORDER BY created_at DESC LIMIT 1',
-    )
+async def get_latest_post(session: SessionDep):
+    query = select(models.Post).order_by(models.Post.created_at.desc()).limit(1)
+    result = await session.execute(query)
+    latest_post = result.scalar_one_or_none()
     if latest_post is None:
         raise HTTPException(status_code=404, detail="Post not found")
     return {"data": latest_post}
