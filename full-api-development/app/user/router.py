@@ -4,10 +4,10 @@ from sqlalchemy import select
 from .. import models, schemas, utils
 from ..database import SessionDep
 
-router = APIRouter()
+router = APIRouter(prefix='/users', tags=['Users'])
 
 
-@router.post('/users', status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
+@router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
 async def create_user(user: schemas.UserCreate, session: SessionDep):
     hashed_password = utils.hash_password(user.password)
     user.password = hashed_password
@@ -18,7 +18,7 @@ async def create_user(user: schemas.UserCreate, session: SessionDep):
     return new_user
 
 
-@router.get('/users/{user_id}', response_model=schemas.UserResponse)
+@router.get('/{user_id}', response_model=schemas.UserResponse)
 async def get_user(user_id: int, session: SessionDep):
     result = await session.execute(select(models.User).where(models.User.id == user_id))
     user = result.scalar_one_or_none()

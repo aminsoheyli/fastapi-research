@@ -4,17 +4,17 @@ from sqlalchemy import select, update
 from .. import models, schemas
 from ..database import SessionDep
 
-router = APIRouter()
+router = APIRouter(prefix='/posts', tags=['Posts'])
 
 
-@router.get('/posts', response_model=list[schemas.Post])
+@router.get('/', response_model=list[schemas.Post])
 async def get_posts(session: SessionDep):
     results = await session.execute(select(models.Post))
     posts = results.scalars().all()
     return posts
 
 
-@router.post('/posts', status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
+@router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
 async def create_post(post: schemas.PostCreate, session: SessionDep):
     new_post = models.Post(**post.model_dump())
     session.add(new_post)
@@ -23,7 +23,7 @@ async def create_post(post: schemas.PostCreate, session: SessionDep):
     return new_post
 
 
-@router.get('/posts/latest', response_model=schemas.Post)
+@router.get('/latest', response_model=schemas.Post)
 async def get_latest_post(session: SessionDep):
     query = select(models.Post).order_by(models.Post.created_at.desc()).limit(1)
     result = await session.execute(query)
@@ -33,7 +33,7 @@ async def get_latest_post(session: SessionDep):
     return latest_post
 
 
-@router.get('/posts/{post_id}', response_model=schemas.Post)
+@router.get('/{post_id}', response_model=schemas.Post)
 async def get_post(post_id: int, session: SessionDep):
     result = await session.execute(select(models.Post).where(models.Post.id == post_id))
     post = result.scalar_one_or_none()
@@ -42,7 +42,7 @@ async def get_post(post_id: int, session: SessionDep):
     return post
 
 
-@router.put('/posts/{post_id}', response_model=schemas.Post)
+@router.put('/{post_id}', response_model=schemas.Post)
 async def update_post(post_id: int, post_update: schemas.PostCreate, session: SessionDep):
     update_data = post_update.model_dump()
     if not update_data:
@@ -56,7 +56,7 @@ async def update_post(post_id: int, post_update: schemas.PostCreate, session: Se
     return updated_post
 
 
-@router.delete('/posts/{post_id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete('/{post_id}', status_code=status.HTTP_204_NO_CONTENT)
 async def delete_post(post_id: int, session: SessionDep):
     post = await session.get(models.Post, post_id)
     if post is None:
