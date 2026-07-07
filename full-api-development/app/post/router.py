@@ -10,8 +10,16 @@ router = APIRouter(prefix='/posts', tags=['Posts'])
 
 
 @router.get('/', response_model=list[schemas.Post])
-async def get_posts(session: SessionDep, user: GetCurrentUserDep):
-    results = await session.execute(select(models.Post).options(joinedload(models.Post.owner)))
+async def get_posts(session: SessionDep, user: GetCurrentUserDep, limit: int = 10, skip: int = 0,
+                    search: str = ''):
+    results = await session.execute(
+        select(models.Post)
+        .where(models.Post.title.contains(search))
+        .order_by(models.Post.created_at.desc())
+        .limit(limit)
+        .offset(skip)
+        .options(joinedload(models.Post.owner))
+    )
     posts = results.scalars().all()
     return posts
 
