@@ -1,6 +1,7 @@
 from datetime import datetime
+from typing import Literal
 
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr
 
 
 class UserCreate(BaseModel):
@@ -36,6 +37,7 @@ class Post(PostBase):
     user_id: int
     owner: UserResponse
 
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -43,3 +45,8 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     user_id: int | None = None
+
+
+class Vote(BaseModel):
+    post_id: int
+    dir: Literal[0, 1]
