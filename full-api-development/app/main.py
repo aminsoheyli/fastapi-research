@@ -26,11 +26,6 @@ app = FastAPI(lifespan=lifespan)
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
-@app.get("/")
-async def root():
-    return {"data": "Welcome to my API!"}
-
-
 @app.get('/posts')
 async def get_posts(session: SessionDep):
     results = await session.execute(select(models.Post))
