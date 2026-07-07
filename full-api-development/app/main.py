@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException, Response, status, Depends
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from . import models, schemas
+from . import models, schemas, utils
 from .database import engine, get_session, Base
 
 
@@ -86,8 +86,10 @@ async def delete_post(post_id: int, session: SessionDep):
 
 
 @app.post('/users', status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
-async def create_user(post: schemas.UserCreate, session: SessionDep):
-    new_user = models.User(**post.model_dump())
+async def create_user(user: schemas.UserCreate, session: SessionDep):
+    hashed_password = utils.hash_password(user.password)
+    user.password = hashed_password
+    new_user = models.User(**user.model_dump())
     session.add(new_user)
     await session.commit()
     await session.refresh(new_user)
