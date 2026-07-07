@@ -83,3 +83,12 @@ async def delete_post(post_id: int, session: SessionDep):
     await session.delete(post)
     await session.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.post('/users', status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
+async def create_user(post: schemas.UserCreate, session: SessionDep):
+    new_user = models.User(**post.model_dump())
+    session.add(new_user)
+    await session.commit()
+    await session.refresh(new_user)
+    return new_user
