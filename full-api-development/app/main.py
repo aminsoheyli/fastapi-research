@@ -35,7 +35,7 @@ async def root():
 async def get_posts(session: SessionDep):
     results = await session.execute(select(models.Post))
     posts = results.scalars().all()
-    return {"data": posts}
+    return posts
 
 
 @app.post('/posts', status_code=status.HTTP_201_CREATED)
@@ -44,7 +44,7 @@ async def create_post(post: schemas.PostCreate, session: SessionDep):
     session.add(new_post)
     await session.commit()
     await session.refresh(new_post)
-    return {"data": new_post}
+    return new_post
 
 
 @app.get('/posts/latest')
@@ -54,7 +54,7 @@ async def get_latest_post(session: SessionDep):
     latest_post = result.scalar_one_or_none()
     if latest_post is None:
         raise HTTPException(status_code=404, detail="Post not found")
-    return {"data": latest_post}
+    return latest_post
 
 
 @app.get('/posts/{post_id}')
@@ -63,7 +63,7 @@ async def get_post(post_id: int, session: SessionDep):
     post = result.scalar_one_or_none()
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
-    return {"data": post}
+    return post
 
 
 @app.put('/posts/{post_id}')
@@ -77,7 +77,7 @@ async def update_post(post_id: int, post_update: schemas.PostCreate, session: Se
     if updated_post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
     await session.commit()
-    return {"data": updated_post}
+    return updated_post
 
 
 @app.delete('/posts/{post_id}', status_code=status.HTTP_204_NO_CONTENT)
