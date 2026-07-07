@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from .database import engine, Base
 from .post.router import router as post_router
 from .user.router import router as user_router
-from .auth import router as auth_router
+from .auth.router import router as auth_router
 
 
 async def init_models():
