@@ -6,6 +6,7 @@ from .database import engine, Base
 from .post.router import router as post_router
 from .user.router import router as user_router
 from .auth.router import router as auth_router
+from .vote.router import router as vote_router
 
 
 async def init_models():
@@ -24,4 +25,5 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(post_router)
 app.include_router(user_router)
+app.include_router(vote_router)
 app.include_router(auth_router)
