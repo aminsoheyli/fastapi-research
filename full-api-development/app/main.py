@@ -2,11 +2,10 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import FastAPI, HTTPException, Response, status, Depends
-from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from . import models
+from . import models, schemas
 from .database import engine, get_session, Base
 
 
@@ -47,7 +46,7 @@ async def get_posts(session: SessionDep):
 
 
 @app.post('/posts', status_code=status.HTTP_201_CREATED)
-async def create_post(post: Post, session: SessionDep):
+async def create_post(post: schemas.PostCreate, session: SessionDep):
     new_post = models.Post(**post.model_dump())
     session.add(new_post)
     await session.commit()
@@ -75,7 +74,7 @@ async def get_post(post_id: int, session: SessionDep):
 
 
 @app.put('/posts/{post_id}')
-async def update_post(post_id: int, post_update: Post, session: SessionDep):
+async def update_post(post_id: int, post_update: schemas.PostCreate, session: SessionDep):
     update_data = post_update.model_dump()
     if not update_data:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No fields provided to update")
