@@ -17,6 +17,7 @@ class Post(PostBase):
     id: int
     published: bool
     created_at: datetime
+    user_id: int
 
 
 class UserCreate(BaseModel):
