@@ -17,7 +17,7 @@ async def get_posts(session: SessionDep, user: GetCurrentUserDep):
 
 @router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
 async def create_post(post: schemas.PostCreate, session: SessionDep, user: GetCurrentUserDep):
-    new_post = models.Post(**post.model_dump())
+    new_post = models.Post(**post.model_dump(), user_id=user.id)
     session.add(new_post)
     await session.commit()
     await session.refresh(new_post)
