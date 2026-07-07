@@ -1,5 +1,6 @@
 from fastapi import HTTPException, Response, status, APIRouter
 from sqlalchemy import select, update
+from sqlalchemy.orm import joinedload
 
 from .. import models, schemas
 from ..database import SessionDep
@@ -10,7 +11,7 @@ router = APIRouter(prefix='/posts', tags=['Posts'])
 
 @router.get('/', response_model=list[schemas.Post])
 async def get_posts(session: SessionDep, user: GetCurrentUserDep):
-    results = await session.execute(select(models.Post))
+    results = await session.execute(select(models.Post).options(joinedload(models.Post.owner)))
     posts = results.scalars().all()
     return posts
 
@@ -26,7 +27,12 @@ async def create_post(post: schemas.PostCreate, session: SessionDep, user: GetCu
 
 @router.get('/latest', response_model=schemas.Post)
 async def get_latest_post(session: SessionDep, user: GetCurrentUserDep):
-    query = select(models.Post).order_by(models.Post.created_at.desc()).limit(1)
+    query = (
+        select(models.Post)
+        .options(joinedload(models.Post.owner))
+        .order_by(models.Post.created_at.desc())
+        .limit(1)
+    )
     result = await session.execute(query)
     latest_post = result.scalar_one_or_none()
     if latest_post is None:
@@ -36,7 +42,11 @@ async def get_latest_post(session: SessionDep, user: GetCurrentUserDep):
 
 @router.get('/{post_id}', response_model=schemas.Post)
 async def get_post(post_id: int, session: SessionDep, user: GetCurrentUserDep):
-    result = await session.execute(select(models.Post).where(models.Post.id == post_id))
+    result = await session.execute(
+        select(models.Post)
+        .where(models.Post.id == post_id)
+        .options(joinedload(models.Post.owner))
+    )
     post = result.scalar_one_or_none()
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
