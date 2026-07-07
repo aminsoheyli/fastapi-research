@@ -10,6 +10,12 @@ router = APIRouter(prefix='/vote', tags=['Vote'])
 
 @router.post('/')
 async def login(vote: schemas.Vote, session: SessionDep, user: GetCurrentUserDep):
+    post = await session.get(models.Post, vote.post_id)
+    if post is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Post does not exist'
+        )
     result = await session.execute(
         select(models.Vote).where(models.Vote.post_id == vote.post_id, models.Vote.user_id == user.id)
     )
