@@ -62,6 +62,9 @@ async def delete_post(post_id: int, session: SessionDep, user: GetCurrentUserDep
     post = await session.get(models.Post, post_id)
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
+    if post.user_id != user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to perform requested action")
+
     await session.delete(post)
     await session.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
