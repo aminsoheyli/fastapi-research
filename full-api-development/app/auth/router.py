@@ -16,7 +16,7 @@ async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()
     user = result.scalar_one_or_none()
     if not user or not utils.verify_password(user_credentials.password, user.password):
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Invalid Credentials."
         )
     access_token = oauth2.create_access_token(data={'user_id': user.id})
