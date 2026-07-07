@@ -6,10 +6,8 @@ from sqlalchemy.orm import DeclarativeBase
 
 from .config import settings
 
-DATABASE_URL = settings.database_url
-
 engine = create_async_engine(
-    DATABASE_URL,
+    url=settings.database_url,
     echo=settings.debug,
     pool_pre_ping=True,
 )
