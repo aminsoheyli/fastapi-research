@@ -94,3 +94,12 @@ async def create_user(user: schemas.UserCreate, session: SessionDep):
     await session.commit()
     await session.refresh(new_user)
     return new_user
+
+
+@app.get('/users/{user_id}', response_model=schemas.UserResponse)
+async def get_user(user_id: int, session: SessionDep):
+    result = await session.execute(select(models.User).where(models.User.id == user_id))
+    user = result.scalar_one_or_none()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
+    return user
