@@ -26,14 +26,14 @@ app = FastAPI(lifespan=lifespan)
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
-@app.get('/posts')
+@app.get('/posts', response_model=list[schemas.Post])
 async def get_posts(session: SessionDep):
     results = await session.execute(select(models.Post))
     posts = results.scalars().all()
     return posts
 
 
-@app.post('/posts', status_code=status.HTTP_201_CREATED)
+@app.post('/posts', status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
 async def create_post(post: schemas.PostCreate, session: SessionDep):
     new_post = models.Post(**post.model_dump())
     session.add(new_post)
@@ -42,7 +42,7 @@ async def create_post(post: schemas.PostCreate, session: SessionDep):
     return new_post
 
 
-@app.get('/posts/latest')
+@app.get('/posts/latest', response_model=schemas.Post)
 async def get_latest_post(session: SessionDep):
     query = select(models.Post).order_by(models.Post.created_at.desc()).limit(1)
     result = await session.execute(query)
@@ -52,7 +52,7 @@ async def get_latest_post(session: SessionDep):
     return latest_post
 
 
-@app.get('/posts/{post_id}')
+@app.get('/posts/{post_id}', response_model=schemas.Post)
 async def get_post(post_id: int, session: SessionDep):
     result = await session.execute(select(models.Post).where(models.Post.id == post_id))
     post = result.scalar_one_or_none()
@@ -61,7 +61,7 @@ async def get_post(post_id: int, session: SessionDep):
     return post
 
 
-@app.put('/posts/{post_id}')
+@app.put('/posts/{post_id}', response_model=schemas.Post)
 async def update_post(post_id: int, post_update: schemas.PostCreate, session: SessionDep):
     update_data = post_update.model_dump()
     if not update_data:
