@@ -2,21 +2,15 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from .database import engine, Base
+from .auth.router import router as auth_router
+from .database import engine
 from .post.router import router as post_router
 from .user.router import router as user_router
-from .auth.router import router as auth_router
 from .vote.router import router as vote_router
-
-
-async def init_models():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # noqa
-    await init_models()
     yield
     await engine.dispose()
 
