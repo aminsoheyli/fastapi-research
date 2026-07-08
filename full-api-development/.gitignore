@@ -36,10 +36,6 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
-.claude/
-.mc/
-CLAUDE.md
-
 # Unit test / coverage reports
 htmlcov/
 .tox/
@@ -155,4 +151,3 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
-test_script.py
