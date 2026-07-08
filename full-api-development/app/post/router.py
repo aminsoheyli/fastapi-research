@@ -1,6 +1,6 @@
 from fastapi import HTTPException, Response, status, APIRouter
-from sqlalchemy import select, update
-from sqlalchemy.orm import joinedload
+from sqlalchemy import select, update, func
+from sqlalchemy.orm import joinedload, selectinload
 
 from .. import models, schemas
 from ..database import SessionDep
@@ -9,18 +9,19 @@ from ..oauth2 import GetCurrentUserDep
 router = APIRouter(prefix='/posts', tags=['Posts'])
 
 
-@router.get('/', response_model=list[schemas.Post])
-async def get_posts(session: SessionDep, user: GetCurrentUserDep, limit: int = 10, skip: int = 0,
-                    search: str = ''):
+@router.get('/', response_model=list[schemas.PostResponse])
+async def get_posts(session: SessionDep, user: GetCurrentUserDep, limit: int = 10, skip: int = 0, search: str = ''):
     results = await session.execute(
-        select(models.Post)
+        select(models.Post, func.count(models.Vote.user_id).label('votes'))
+        .join(models.Vote, onclause=models.Post.id == models.Vote.post_id, isouter=True)
+        .options(selectinload(models.Post.owner))
         .where(models.Post.title.contains(search))
         .order_by(models.Post.created_at.desc())
         .limit(limit)
         .offset(skip)
-        .options(joinedload(models.Post.owner))
+        .group_by(models.Post.id)
     )
-    posts = results.scalars().all()
+    posts = [{"post": row.Post, "votes": row.votes} for row in results.all()]
     return posts
 
 
@@ -33,32 +34,35 @@ async def create_post(post: schemas.PostCreate, session: SessionDep, user: GetCu
     return new_post
 
 
-@router.get('/latest', response_model=schemas.Post)
+@router.get('/latest', response_model=schemas.PostResponse)
 async def get_latest_post(session: SessionDep, user: GetCurrentUserDep):
-    query = (
-        select(models.Post)
-        .options(joinedload(models.Post.owner))
+    result = await session.execute(
+        select(models.Post, func.count(models.Vote.user_id).label('votes'))
+        .join(models.Vote, onclause=models.Post.id == models.Vote.post_id, isouter=True)
         .order_by(models.Post.created_at.desc())
+        .options(selectinload(models.Post.owner))
+        .group_by(models.Post.id)
         .limit(1)
     )
-    result = await session.execute(query)
-    latest_post = result.scalar_one_or_none()
-    if latest_post is None:
+    row = result.first()
+    if row is None:
         raise HTTPException(status_code=404, detail="Post not found")
-    return latest_post
+    return {"post": row.Post, "votes": row.votes}
 
 
-@router.get('/{post_id}', response_model=schemas.Post)
+@router.get('/{post_id}', response_model=schemas.PostResponse)
 async def get_post(post_id: int, session: SessionDep, user: GetCurrentUserDep):
     result = await session.execute(
-        select(models.Post)
+        select(models.Post, func.count(models.Vote.user_id).label('votes'))
+        .join(models.Vote, onclause=models.Post.id == models.Vote.post_id, isouter=True)
         .where(models.Post.id == post_id)
-        .options(joinedload(models.Post.owner))
+        .options(selectinload(models.Post.owner))
+        .group_by(models.Post.id)
     )
-    post = result.scalar_one_or_none()
-    if post is None:
+    row = result.first()
+    if row is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
-    return post
+    return {"post": row.Post, "votes": row.votes}
 
 
 @router.put('/{post_id}', response_model=schemas.Post)
