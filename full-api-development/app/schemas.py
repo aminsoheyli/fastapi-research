@@ -37,6 +37,9 @@ class Post(PostBase):
     user_id: int
     owner: UserResponse
 
+class PostResponse(BaseModel):
+    post: Post
+    votes: int
 
 class Token(BaseModel):
     access_token: str
