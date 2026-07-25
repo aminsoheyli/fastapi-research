@@ -1,0 +1,25 @@
+[Unit]
+Description=FastAPI app (full-api-development)
+After=network.target
+
+[Service]
+Type=notify
+User=amin
+Group=www-data
+WorkingDirectory=/srv/social-api
+EnvironmentFile=-/srv/social-api/.env
+Environment="APP_HOME=/srv/social-api"
+Environment="PATH=/srv/social-api/.venv/bin"
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/srv/social-api/.venv/bin/gunicorn \
+  app.main:app \
+  -k uvicorn.workers.UvicornWorker \
+  --workers 4 \
+  --bind 0.0.0.0:8000
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
