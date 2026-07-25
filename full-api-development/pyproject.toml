@@ -3,11 +3,12 @@ name = "full-api-development"
 version = "0.1.0"
 description = "full api development using fastapi framework"
 readme = "README.md"
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "alembic==1.18.5",
     "asyncpg==0.31.0",
     "fastapi[all]>=0.139.0,<0.140.0",
+    "gunicorn==26.0.0",
     "pwdlib[argon2]==0.3.0",
     "pydantic-settings==2.14.2",
     "pyjwt==2.13.0",
