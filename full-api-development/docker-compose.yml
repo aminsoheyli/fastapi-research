@@ -14,6 +14,25 @@ services:
       - postgres
     ports:
       - 8000:8000
+    profiles:
+      - production
+
+  api-dev:
+    build: .
+    container_name: api-dev
+    command: /app/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    volumes:
+      - ./app:/app/app:ro
+      - ./alembic:/app/alembic:ro
+      - ./alembic.ini:/app/alembic.ini:ro
+    ports:
+      - 8000:8000
+    profiles:
+      - development
 
   postgres:
     image: postgres:17-trixie@sha256:5c855ad7b85e68e48a62f34662853f38b57c1c1d80f3a927ab58034fd6d31c5e
