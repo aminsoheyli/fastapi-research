@@ -153,3 +153,5 @@ dmypy.json
 cython_debug/
 load-test.js
 stats
+nginx/certs/*
+!nginx/certs/.gitkeep
