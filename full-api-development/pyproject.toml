@@ -14,3 +14,13 @@ dependencies = [
     "pyjwt==2.13.0",
     "sqlalchemy==2.0.51",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1,<10.0.0",
+]
+
+[tool.pytest]
+testpaths = ["tests"]
+addopts = ["-ra"]
+pythonpath = ["."]
