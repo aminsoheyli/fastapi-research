@@ -5,6 +5,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from .auth.router import router as auth_router
 from .database import engine
+from .health.router import router as health_router
 from .post.router import router as post_router
 from .user.router import router as user_router
 from .vote.router import router as vote_router
@@ -25,6 +26,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(health_router)
 app.include_router(post_router)
 app.include_router(user_router)
 app.include_router(vote_router)
